@@ -1,0 +1,38 @@
+.sidebarOption {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.sidebarOption:hover {
+  background-color: #bbdefb;
+}
+
+.sidebarOption__icon {
+  font-size: 24px;
+  margin-right: 12px;
+  color: #1565c0;
+}
+
+/* Texto aparece normalmente em desktop */
+.sidebarOption__text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Esconde o texto no mobile */
+@media (max-width: 767px) {
+  .sidebarOption__text {
+    display: none;
+  }
+  
+  .sidebarOption {
+    justify-content: center; /* Centraliza o ícone */
+  }
+}
+
+
