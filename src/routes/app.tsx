@@ -1,7 +1,17 @@
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Snowflake, Trash2, Package, ArrowLeft } from "lucide-react";
+import { Snowflake, Trash2, Package, ArrowLeft, Filter, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AddItemForm } from "@/components/AddItemForm";
 import {
   useFreezerItems,
@@ -9,7 +19,13 @@ import {
   SIZE_LABELS,
   daysUntil,
   type FreezerItem,
+  type FreezerItemType,
+  type FreezerItemSize,
 } from "@/hooks/use-freezer-items";
+
+type TypeFilter = FreezerItemType | "all";
+type SizeFilter = FreezerItemSize | "all";
+type StatusFilter = "all" | "expired" | "soon" | "ok";
 
 export const Route = createFileRoute("/app")({
   head: () => ({
@@ -39,6 +55,36 @@ function formatDate(iso: string) {
 
 function FreezerApp() {
   const { items, addItem, removeItem, hydrated } = useFreezerItems();
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [sizeFilter, setSizeFilter] = useState<SizeFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false;
+      if (typeFilter !== "all" && item.type !== typeFilter) return false;
+      if (sizeFilter !== "all" && item.size !== sizeFilter) return false;
+      if (statusFilter !== "all") {
+        const days = daysUntil(item.expiresAt);
+        if (statusFilter === "expired" && days >= 0) return false;
+        if (statusFilter === "soon" && (days < 0 || days > 7)) return false;
+        if (statusFilter === "ok" && days <= 7) return false;
+      }
+      return true;
+    });
+  }, [items, search, typeFilter, sizeFilter, statusFilter]);
+
+  const hasActiveFilters =
+    search !== "" || typeFilter !== "all" || sizeFilter !== "all" || statusFilter !== "all";
+
+  const clearFilters = () => {
+    setSearch("");
+    setTypeFilter("all");
+    setSizeFilter("all");
+    setStatusFilter("all");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-frost">
@@ -74,7 +120,98 @@ function FreezerApp() {
         <div className="grid lg:grid-cols-[400px_1fr] gap-8 items-start">
           <AddItemForm onAdd={addItem} />
 
-          <section className="space-y-3">
+          <section className="space-y-4">
+            {hydrated && items.length > 0 && (
+              <Collapsible
+                open={filtersOpen}
+                onOpenChange={setFiltersOpen}
+                className="bg-card border border-border rounded-2xl shadow-soft"
+              >
+                <div className="flex items-center justify-between gap-2 p-4">
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 text-sm font-semibold text-deep flex-1 text-left"
+                    >
+                      <Filter className="w-4 h-4 text-primary" />
+                      Filtros
+                      {hasActiveFilters && (
+                        <span className="text-xs font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                          ativos
+                        </span>
+                      )}
+                      <ChevronDown
+                        className={`w-4 h-4 text-muted-foreground ml-auto transition-transform ${
+                          filtersOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                  </CollapsibleTrigger>
+                  {hasActiveFilters && (
+                    <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 px-2">
+                      <X className="w-3.5 h-3.5 mr-1" />
+                      Limpar
+                    </Button>
+                  )}
+                </div>
+                <CollapsibleContent className="px-4 pb-4 space-y-3">
+                  <Input
+                    placeholder="Buscar pelo nome..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as TypeFilter)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os tipos</SelectItem>
+                        {(Object.keys(TYPE_LABELS) as FreezerItemType[]).map((t) => (
+                          <SelectItem key={t} value={t}>
+                            {TYPE_LABELS[t]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={sizeFilter} onValueChange={(v) => setSizeFilter(v as SizeFilter)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Tamanho" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os tamanhos</SelectItem>
+                        {(Object.keys(SIZE_LABELS) as FreezerItemSize[]).map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {SIZE_LABELS[s]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={statusFilter}
+                      onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os status</SelectItem>
+                        <SelectItem value="expired">Vencidos</SelectItem>
+                        <SelectItem value="soon">Vence em até 7d</SelectItem>
+                        <SelectItem value="ok">Em dia</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {hasActiveFilters && (
+                    <p className="text-xs text-muted-foreground">
+                      Mostrando {filteredItems.length} de {items.length}{" "}
+                      {items.length === 1 ? "item" : "itens"}
+                    </p>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
             {!hydrated ? null : items.length === 0 ? (
               <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center">
                 <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -85,8 +222,18 @@ function FreezerApp() {
                   Cadastre seu primeiro item no formulário ao lado.
                 </p>
               </div>
+            ) : filteredItems.length === 0 ? (
+              <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <Filter className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="text-lg font-bold text-deep mb-1">Nenhum item encontrado</h3>
+                <p className="text-muted-foreground text-sm">
+                  Tente ajustar ou limpar os filtros.
+                </p>
+              </div>
             ) : (
-              items.map((item) => (
+              filteredItems.map((item) => (
                 <article
                   key={item.id}
                   className="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-frost transition-smooth flex items-center gap-4"
