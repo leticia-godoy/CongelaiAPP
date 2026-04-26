@@ -40,11 +40,10 @@ function Index() {
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-smooth">Recursos</a>
             <a href="#how" className="hover:text-foreground transition-smooth">Como funciona</a>
-            <a href="#pricing" className="hover:text-foreground transition-smooth">Preço</a>
           </nav>
           <Link to="/app">
             <Button variant="default" className="bg-gradient-cta shadow-frost hover:shadow-glow transition-smooth">
-              Começar grátis
+              Começar
             </Button>
           </Link>
         </div>
@@ -59,10 +58,6 @@ function Index() {
 
         <div className="relative max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border shadow-soft text-sm">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="font-medium text-deep">Inteligência artificial para o seu freezer</span>
-            </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] text-deep">
               Tudo o que está no seu{" "}
@@ -78,23 +73,20 @@ function Index() {
             <div className="flex flex-col sm:flex-row gap-3">
               <Link to="/app">
                 <Button size="lg" className="bg-gradient-cta shadow-frost hover:shadow-glow transition-smooth h-14 px-8 text-base w-full sm:w-auto">
-                  Organizar meu freezer
+                  Ver o que tenho no freezer
                   <ArrowRight className="ml-1 w-5 h-5" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-base border-2">
-                Ver demonstração
-              </Button>
             </div>
 
             <div className="flex items-center gap-6 pt-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary" />
-                <span>Grátis para começar</span>
+                <span>Facinho para começar</span>
               </div>
               <div className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary" />
-                <span>Sem cartão</span>
+                <span>Sem aperreio</span>
               </div>
             </div>
           </div>
@@ -199,7 +191,7 @@ function Index() {
             <div className="relative">
               <Snowflake className="w-12 h-12 text-primary-foreground mx-auto mb-6 animate-float" />
               <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
-                Pronto para descongelar a bagunça?
+                Vamos descongelar essa bagunça?
               </h2>
               <p className="text-lg text-primary-foreground/90 mb-8 max-w-xl mx-auto">
                 Junte-se a quem já economiza tempo e dinheiro com um freezer organizado.
