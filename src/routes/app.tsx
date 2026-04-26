@@ -1,6 +1,19 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Snowflake, Trash2, Package, ArrowLeft, Filter, X, ChevronDown } from "lucide-react";
+import {
+  Snowflake,
+  Trash2,
+  Package,
+  ArrowLeft,
+  Filter,
+  X,
+  ChevronDown,
+  Download,
+  Utensils,
+  Beef,
+  Carrot,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -13,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AddItemForm } from "@/components/AddItemForm";
+import { ExportDialog } from "@/components/ExportDialog";
 import {
   useFreezerItems,
   TYPE_LABELS,
@@ -26,6 +40,13 @@ import {
 type TypeFilter = FreezerItemType | "all";
 type SizeFilter = FreezerItemSize | "all";
 type StatusFilter = "all" | "expired" | "soon" | "ok";
+
+const TYPE_ICONS: Record<FreezerItemType, LucideIcon> = {
+  marmita: Utensils,
+  carne: Beef,
+  vegetal: Carrot,
+  outro: Package,
+};
 
 export const Route = createFileRoute("/app")({
   head: () => ({
@@ -60,6 +81,7 @@ function FreezerApp() {
   const [sizeFilter, setSizeFilter] = useState<SizeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -108,14 +130,28 @@ function FreezerApp() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-deep mb-2">Meu freezer</h1>
-          <p className="text-muted-foreground">
-            {hydrated && items.length > 0
-              ? `${items.length} ${items.length === 1 ? "item cadastrado" : "itens cadastrados"}`
-              : "Comece adicionando o que está no seu congelador."}
-          </p>
+        <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-deep mb-2">Meu freezer</h1>
+            <p className="text-muted-foreground">
+              {hydrated && items.length > 0
+                ? `${items.length} ${items.length === 1 ? "item cadastrado" : "itens cadastrados"}`
+                : "Comece adicionando o que está no seu congelador."}
+            </p>
+          </div>
+          {hydrated && items.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => setExportOpen(true)}
+              className="border-2 shadow-soft hover:shadow-frost transition-smooth"
+            >
+              <Download className="w-4 h-4 mr-1" />
+              Download
+            </Button>
+          )}
         </div>
+
+        <ExportDialog open={exportOpen} onOpenChange={setExportOpen} items={items} />
 
         <div className="grid lg:grid-cols-[400px_1fr] gap-8 items-start">
           <AddItemForm onAdd={addItem} />
@@ -233,13 +269,15 @@ function FreezerApp() {
                 </p>
               </div>
             ) : (
-              filteredItems.map((item) => (
+              filteredItems.map((item) => {
+                const ItemIcon = TYPE_ICONS[item.type];
+                return (
                 <article
                   key={item.id}
                   className="bg-card border border-border rounded-2xl p-5 shadow-soft hover:shadow-frost transition-smooth flex items-center gap-4"
                 >
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Snowflake className="w-6 h-6 text-primary" />
+                    <ItemIcon className="w-6 h-6 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -262,7 +300,8 @@ function FreezerApp() {
                     <Trash2 className="w-4 h-4 text-muted-foreground" />
                   </Button>
                 </article>
-              ))
+                );
+              })
             )}
           </section>
         </div>
